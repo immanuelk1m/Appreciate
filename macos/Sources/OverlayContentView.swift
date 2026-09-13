@@ -52,14 +52,14 @@ struct OverlayContentView: View {
         self.fontSize = CGFloat.random(in: 36...72)
         self.fontWeight = fontWeights.randomElement()!
         self.fontDesign = fontDesigns.randomElement()!
-        self.textColor = vibrantColors.randomElement()!
+        self.textColor = Color.black
         self.shadowColor = Color.black.opacity(Double.random(in: 0.4...0.7))
         self.rotation = Double.random(in: -3...3)
     }
 
     var body: some View {
         Text(text)
-            .font(.system(size: fontSize, weight: fontWeight, design: fontDesign))
+            .font(.custom("NotoSansKR-Regular", fixedSize: fontSize).weight(fontWeight))
             .foregroundColor(textColor)
             .shadow(color: shadowColor, radius: 8, x: 2, y: 2)
             .shadow(color: .black.opacity(0.3), radius: 16, x: 0, y: 0)

@@ -93,7 +93,7 @@ struct OverlayStyle {
 
     static func random() -> OverlayStyle {
         let showPill = Bool.random()
-        let textColor = vibrantColors.randomElement()!
+        let textColor = Color.black
         // Pill color is a desaturated version or contrasting dark/light
         let pillColor = Bool.random()
             ? Color.black.opacity(0.4)
@@ -189,7 +189,7 @@ private struct AnimatingOverlayView: View {
 
     private var textContent: some View {
         Text(text)
-            .font(.system(size: style.fontSize, weight: style.fontWeight, design: style.fontDesign))
+            .font(.custom("NotoSansKR-Regular", fixedSize: style.fontSize).weight(style.fontWeight))
             .foregroundColor(style.textColor)
             .shadow(color: .black.opacity(style.shadowOpacity), radius: 8, x: 2, y: 2)
             .shadow(color: .black.opacity(0.3), radius: 16, x: 0, y: 0)

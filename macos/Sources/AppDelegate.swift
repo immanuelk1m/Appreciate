@@ -4,11 +4,12 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var timerManager: TimerManager!
-    private let overlayManager = OverlayManager()
     private let settings = SettingsStore.shared
     private var settingsWindow: NSWindow?
     private var enabledMenuItem: NSMenuItem!
     private var launchAtLoginMenuItem: NSMenuItem!
+    private var restoreReminderWorkItem: DispatchWorkItem?
+    private let reminderMaximumWidth: CGFloat = 360
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Activate as accessory (no dock icon)
@@ -30,6 +31,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "Appreciate")
             button.image?.size = NSSize(width: 18, height: 18)
+            button.font = .menuBarFont(ofSize: 0)
+            button.lineBreakMode = .byTruncatingTail
         }
 
         let menu = NSMenu()
@@ -72,11 +75,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func showReminder() {
-        guard settings.isEnabled else { return }
-        overlayManager.showOverlay(
-            text: settings.randomLine,
-            displayDuration: settings.displayDurationSeconds
-        )
+        let reminder = settings.randomLine
+        guard settings.isEnabled, !reminder.isEmpty else {
+            restoreMenuBarIcon()
+            return
+        }
+
+        let font = NSFont.menuBarFont(ofSize: 0)
+        let width = (reminder as NSString).size(withAttributes: [.font: font]).width
+
+        guard let button = statusItem.button else { return }
+        restoreReminderWorkItem?.cancel()
+        button.image = nil
+        button.title = reminder
+        button.toolTip = reminder
+        statusItem.length = min(reminderMaximumWidth, ceil(width) + 16)
+
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.restoreMenuBarIcon()
+        }
+        restoreReminderWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + settings.displayDurationSeconds, execute: workItem)
+    }
+
+    private func restoreMenuBarIcon() {
+        restoreReminderWorkItem?.cancel()
+        restoreReminderWorkItem = nil
+        guard let button = statusItem.button else { return }
+        button.title = ""
+        button.toolTip = nil
+        button.image = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "Appreciate")
+        button.image?.size = NSSize(width: 18, height: 18)
+        statusItem.length = NSStatusItem.variableLength
     }
 
     // MARK: - Actions
@@ -93,6 +123,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             timerManager.start()
         } else {
             timerManager.stop()
+            restoreMenuBarIcon()
         }
     }
 

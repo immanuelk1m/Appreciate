@@ -6,19 +6,31 @@
 
 🌐 [appreciate.srid.ca](https://appreciate.srid.ca)
 
-A tiny app that periodically flashes customizable reminders across your screen as transparent overlays — nudging you to stay present, feel good, or remember whatever matters to you.
+A tiny reminder app. This personal macOS fork shows customizable reminders inside the menu bar; other platforms use the upstream screen overlays.
 
-Comes with built-in **Reminder Packs** (Sensory, Actualism Method, Richard's Journal, Cooking, ...) and lets you create your own. Interval, position, font, color, and style are all **randomized** to prevent habituation.
+Comes with built-in **Reminder Packs** (Sensory, Actualism Method, Richard's Journal, Cooking, ...) and lets you create your own. Intervals are randomized. Other platforms also retain their upstream visual randomization.
 
 Available for **macOS**, **Android**, **Windows**, and **Linux**.
 
+
+## Personal macOS fork
+
+This fork displays reminders **inside the menu bar only**, using the system font. A reminder temporarily replaces the sparkle icon, then restores it after Display Duration. Long text is truncated to a maximum 360-point item; hover to read the full text. Show Now uses the same behavior, repeated reminders restart the display duration, and disabling reminders restores the icon immediately. Other platforms retain upstream behavior.
+
+Existing packs, intervals, display duration, and login settings are preserved. On this Mac the configured interval is 30–60 minutes and the duration is 5 seconds; new installations retain the upstream defaults.
+
+Run `./update.command` to build and install the latest `master` from [immanuelk1m/Appreciate](https://github.com/immanuelk1m/Appreciate). It requires Xcode command-line tools, runs menu-bar regression checks, ad-hoc signs the app, and backs up the installed app and preferences before replacement. Installation failures restore the backup. Official upstream DMGs replace this customization. Upstream changes must be reviewed and merged into the fork explicitly.
+
+The previous black/Noto Sans KR overlay source is retained for history but is no longer used by the macOS reminder path. The font's license is in `macos/Fonts/OFL.txt`.
+
 ## Features
 
-- 🖥️ **Screen overlay** — reminder text appears directly on your desktop, then fades away
+- 🍎 **macOS menu bar** — reminder text appears briefly in the menu bar, then returns to the sparkle icon
+- 🖥️ **Screen overlay (other platforms)** — reminder text appears directly on your desktop, then fades away
 - 📦 **Reminder Packs** — built-in packs (Sensory, Actualism Method, Richard's Journal, Cooking) plus create your own
 - ✏️ **Fully editable** — add, delete, and edit packs; each pack has multiple lines (random pick)
-- 🎲 **Anti-habituation** — everything is randomized (timing, position, color, font, animation style)
-- 🖥️🖥️ **Multi-monitor** — appears on all screens simultaneously (macOS, Windows)
+- 🎲 **Anti-habituation** — randomized timing; other platforms retain their upstream visual effects
+- 🖥️🖥️ **Multi-monitor** — appears on all screens simultaneously (Windows)
 - 🎯 **Background app** — menubar on macOS, foreground service on Android, system tray on Windows
 - 🎧 **Voice mode** — automatically speaks reminders via TTS when headphones are connected (Android)
 
@@ -26,15 +38,13 @@ Available for **macOS**, **Android**, **Windows**, and **Linux**.
 
 ## macOS
 
-### Install from DMG
+### Install or update this fork
 
-1. Download the latest `.dmg` from [Releases](../../releases)
-2. Drag **Appreciate** to **Applications**
-3. Remove quarantine (required for unsigned apps):
-   ```bash
-   xattr -cr /Applications/Appreciate.app
-   ```
-4. Open Appreciate — the ✨ icon appears in your menubar
+```bash
+./update.command
+```
+
+This installs into `/Applications/Appreciate.app`. Upstream DMGs use screen overlays and do not contain this fork's menu-bar behavior.
 
 ### Build from source
 
