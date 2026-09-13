@@ -88,8 +88,8 @@ final class SettingsStore: ObservableObject {
 
         defaults.register(defaults: [
             Keys.selectedPack: bundled.defaultPack,
-            Keys.minIntervalMinutes: 0.1,
-            Keys.maxIntervalMinutes: 1.5,
+            Keys.minIntervalMinutes: 20.0,
+            Keys.maxIntervalMinutes: 30.0,
             Keys.displayDurationSeconds: 6.0,
             Keys.isEnabled: true,
             Keys.launchAtLogin: true,
@@ -155,9 +155,22 @@ final class SettingsStore: ObservableObject {
         }
     }
 
-    /// Returns a random line from the current pack's reminder text.
-    var randomLine: String {
-        let lines = reminderText.components(separatedBy: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-        return lines.randomElement() ?? reminderText
+    /// Advances through the selected pack in order, retaining the cursor across launches.
+    var nextLine: String {
+        let key = "nextReminderIndex." + selectedPack
+        var index = defaults.integer(forKey: key)
+        let line = nextReminderLine(text: reminderText, index: &index)
+        defaults.set(index, forKey: key)
+        return line
     }
+}
+
+func nextReminderLine(text: String, index: inout Int) -> String {
+    let lines = text.components(separatedBy: .newlines)
+        .map { $0.trimmingCharacters(in: .whitespaces) }
+        .filter { !$0.isEmpty }
+    guard !lines.isEmpty else { index = 0; return "" }
+    let current = max(0, index) % lines.count
+    index = (current + 1) % lines.count
+    return lines[current]
 }

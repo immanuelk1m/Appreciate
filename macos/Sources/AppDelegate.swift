@@ -92,7 +92,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     }
 
     private func deliverReminder(showSettingsOnFailure: Bool = false) {
-        let reminder = settings.randomLine
+        let reminder = settings.nextLine
         guard !reminder.isEmpty else { return }
 
         let request = UNNotificationRequest(

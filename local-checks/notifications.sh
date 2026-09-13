@@ -17,3 +17,7 @@ swiftc \
   "$ROOT/macos/Sources/AppDelegate.swift" \
   "$TEMP_DIR/main.swift"
 "$TEMP_DIR/notifications-regression"
+
+swiftc -o "$TEMP_DIR/rotation-check" -framework Combine -framework ServiceManagement \
+  "$ROOT/macos/Sources/SettingsStore.swift" "$ROOT/local-checks/rotation.swift"
+"$TEMP_DIR/rotation-check"

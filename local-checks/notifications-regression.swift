@@ -8,7 +8,7 @@ final class SettingsStore {
     static let shared = SettingsStore()
     var isEnabled = true
     var launchAtLogin = false
-    var randomLine = "오늘 내가 정해둔 내 삶을 살아가고 있는가?"
+    var nextLine = "오늘 내가 정해둔 내 삶을 살아가고 있는가?"
     var displayDurationSeconds = 0.1
     var minIntervalMinutes = 1.0 / 60.0
     var maxIntervalMinutes = 1.0 / 60.0
@@ -19,7 +19,7 @@ struct SettingsView: View {
     var body: some View { EmptyView() }
 }
 
-let reminder = SettingsStore.shared.randomLine
+let reminder = SettingsStore.shared.nextLine
 let content = reminderNotificationContent(reminder: reminder)
 
 assert(content.title == "Appreciate")
