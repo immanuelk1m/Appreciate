@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Settings window for customizing reminder text, intervals, and display duration.
+/// Settings window for customizing reminder text and intervals.
 struct SettingsView: View {
     @ObservedObject var settings: SettingsStore
     var onShowNow: () -> Void
@@ -76,16 +76,13 @@ struct SettingsView: View {
                 }
             }
 
-            // Display duration
+            // Notification display
             VStack(alignment: .leading, spacing: 6) {
-                Text("Display Duration")
+                Text("Notification Display")
                     .font(.headline)
-                HStack {
-                    Slider(value: $settings.displayDurationSeconds, in: 2...10, step: 0.5)
-                    Text("\(settings.displayDurationSeconds, specifier: "%.1f")s")
-                        .frame(width: 40, alignment: .trailing)
-                        .monospacedDigit()
-                }
+                Text("Choose a banner or alert style in System Settings > Notifications > Appreciate.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
 
             Divider()

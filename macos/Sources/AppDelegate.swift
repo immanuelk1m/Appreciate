@@ -1,20 +1,34 @@
 import Cocoa
 import SwiftUI
+import UserNotifications
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+func reminderNotificationContent(reminder: String) -> UNMutableNotificationContent {
+    let content = UNMutableNotificationContent()
+    content.title = "Appreciate"
+    content.body = reminder
+    content.sound = .default
+    return content
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     private var statusItem: NSStatusItem!
     private var timerManager: TimerManager!
     private let settings = SettingsStore.shared
+    private let notificationCenter = UNUserNotificationCenter.current()
     private var settingsWindow: NSWindow?
     private var enabledMenuItem: NSMenuItem!
     private var launchAtLoginMenuItem: NSMenuItem!
-    private var restoreReminderWorkItem: DispatchWorkItem?
-    private let reminderMaximumWidth: CGFloat = 360
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Activate as accessory (no dock icon)
         NSApp.setActivationPolicy(.accessory)
 
+        notificationCenter.delegate = self
+        notificationCenter.requestAuthorization(options: [.alert, .sound]) { _, error in
+            if let error {
+                NSLog("[Appreciate] Notification authorization failed: %@", error.localizedDescription)
+            }
+        }
         setupMenuBar()
         setupTimer()
 
@@ -31,8 +45,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "Appreciate")
             button.image?.size = NSSize(width: 18, height: 18)
-            button.font = .menuBarFont(ofSize: 0)
-            button.lineBreakMode = .byTruncatingTail
         }
 
         let menu = NSMenu()
@@ -75,44 +87,65 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func showReminder() {
-        let reminder = settings.randomLine
-        guard settings.isEnabled, !reminder.isEmpty else {
-            restoreMenuBarIcon()
-            return
-        }
-
-        let font = NSFont.menuBarFont(ofSize: 0)
-        let width = (reminder as NSString).size(withAttributes: [.font: font]).width
-
-        guard let button = statusItem.button else { return }
-        restoreReminderWorkItem?.cancel()
-        button.image = nil
-        button.title = reminder
-        button.toolTip = reminder
-        statusItem.length = min(reminderMaximumWidth, ceil(width) + 16)
-
-        let workItem = DispatchWorkItem { [weak self] in
-            self?.restoreMenuBarIcon()
-        }
-        restoreReminderWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + settings.displayDurationSeconds, execute: workItem)
+        guard settings.isEnabled else { return }
+        deliverReminder()
     }
 
-    private func restoreMenuBarIcon() {
-        restoreReminderWorkItem?.cancel()
-        restoreReminderWorkItem = nil
-        guard let button = statusItem.button else { return }
-        button.title = ""
-        button.toolTip = nil
-        button.image = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "Appreciate")
-        button.image?.size = NSSize(width: 18, height: 18)
-        statusItem.length = NSStatusItem.variableLength
+    private func deliverReminder(showSettingsOnFailure: Bool = false) {
+        let reminder = settings.randomLine
+        guard !reminder.isEmpty else { return }
+
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: reminderNotificationContent(reminder: reminder),
+            trigger: nil
+        )
+        notificationCenter.add(request) { [weak self] error in
+            if let error {
+                NSLog("[Appreciate] Notification delivery failed: %@", error.localizedDescription)
+                if showSettingsOnFailure {
+                    DispatchQueue.main.async {
+                        self?.showNotificationSettingsAlert()
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Actions
 
     @objc private func showNow() {
-        showReminder()
+        notificationCenter.getNotificationSettings { [weak self] notificationSettings in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                switch notificationSettings.authorizationStatus {
+                case .authorized, .provisional, .ephemeral:
+                    self.deliverReminder(showSettingsOnFailure: true)
+                case .notDetermined:
+                    self.notificationCenter.requestAuthorization(options: [.alert, .sound]) { granted, _ in
+                        DispatchQueue.main.async {
+                            granted ? self.deliverReminder(showSettingsOnFailure: true) : self.showNotificationSettingsAlert()
+                        }
+                    }
+                case .denied:
+                    self.showNotificationSettingsAlert()
+                @unknown default:
+                    self.showNotificationSettingsAlert()
+                }
+            }
+        }
+    }
+
+    private func showNotificationSettingsAlert() {
+        let alert = NSAlert()
+        alert.messageText = "Notifications Are Off"
+        alert.informativeText = "Enable notifications for Appreciate in System Settings to show reminders."
+        alert.addButton(withTitle: "Open Notification Settings")
+        alert.addButton(withTitle: "Cancel")
+        if alert.runModal() == .alertFirstButtonReturn,
+           let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     @objc private func toggleEnabled() {
@@ -123,7 +156,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             timerManager.start()
         } else {
             timerManager.stop()
-            restoreMenuBarIcon()
         }
     }
 
@@ -140,7 +172,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let settingsView = SettingsView(settings: settings) { [weak self] in
-            self?.showReminder()
+            self?.showNow()
         }
 
         let window = NSWindow(
@@ -162,6 +194,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func quit() {
         NSApp.terminate(nil)
+    }
+}
+
+extension AppDelegate {
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .list, .sound])
     }
 }
 

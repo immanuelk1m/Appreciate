@@ -6,7 +6,7 @@
 
 🌐 [appreciate.srid.ca](https://appreciate.srid.ca)
 
-A tiny reminder app. This personal macOS fork shows customizable reminders inside the menu bar; other platforms use the upstream screen overlays.
+A tiny reminder app. This personal macOS fork shows customizable reminders as native notification banners; other platforms use the upstream screen overlays.
 
 Comes with built-in **Reminder Packs** (Sensory, Actualism Method, Richard's Journal, Cooking, ...) and lets you create your own. Intervals are randomized. Other platforms also retain their upstream visual randomization.
 
@@ -15,17 +15,17 @@ Available for **macOS**, **Android**, **Windows**, and **Linux**.
 
 ## Personal macOS fork
 
-This fork displays reminders **inside the menu bar only**, using the system font. A reminder temporarily replaces the sparkle icon, then restores it after Display Duration. Long text is truncated to a maximum 360-point item; hover to read the full text. Show Now uses the same behavior, repeated reminders restart the display duration, and disabling reminders restores the icon immediately. Other platforms retain upstream behavior.
+This fork displays reminders as **native macOS notification banners**, with the full reminder text and default notification sound. The menu-bar sparkle icon stays in place. Allow notifications when macOS asks; banner style, sound, and duration are controlled in System Settings → Notifications → Appreciate. Focus and macOS notification settings may suppress banners.
 
-Existing packs, intervals, display duration, and login settings are preserved. On this Mac the configured interval is 30–60 minutes and the duration is 5 seconds; new installations retain the upstream defaults.
+Show Now sends a test notification even when periodic reminders are disabled. Enabled controls the existing random-interval timer. Existing packs, intervals, login settings, and saved preferences are preserved. The former Display Duration preference is retained for compatibility but does not control native notifications. Other platforms retain upstream behavior.
 
-Run `./update.command` to build and install the latest `master` from [immanuelk1m/Appreciate](https://github.com/immanuelk1m/Appreciate). It requires Xcode command-line tools, runs menu-bar regression checks, ad-hoc signs the app, and backs up the installed app and preferences before replacement. Installation failures restore the backup. Official upstream DMGs replace this customization. Upstream changes must be reviewed and merged into the fork explicitly.
+Run `./update.command` to build and install the latest `master` from [immanuelk1m/Appreciate](https://github.com/immanuelk1m/Appreciate). It requires Xcode command-line tools, runs notification regression checks, ad-hoc signs the app, and backs up the installed app and preferences before replacement. Installation failures restore the backup. Official upstream DMGs replace this customization. Upstream changes must be reviewed and merged into the fork explicitly.
 
 The previous black/Noto Sans KR overlay source is retained for history but is no longer used by the macOS reminder path. The font's license is in `macos/Fonts/OFL.txt`.
 
 ## Features
 
-- 🍎 **macOS menu bar** — reminder text appears briefly in the menu bar, then returns to the sparkle icon
+- 🍎 **macOS notifications** — full reminder text in native notification banners with sound
 - 🖥️ **Screen overlay (other platforms)** — reminder text appears directly on your desktop, then fades away
 - 📦 **Reminder Packs** — built-in packs (Sensory, Actualism Method, Richard's Journal, Cooking) plus create your own
 - ✏️ **Fully editable** — add, delete, and edit packs; each pack has multiple lines (random pick)
@@ -44,7 +44,7 @@ The previous black/Noto Sans KR overlay source is retained for history but is no
 ./update.command
 ```
 
-This installs into `/Applications/Appreciate.app`. Upstream DMGs use screen overlays and do not contain this fork's menu-bar behavior.
+This installs into `/Applications/Appreciate.app`. Upstream DMGs use screen overlays and do not contain this fork's notification behavior.
 
 ### Build from source
 
@@ -156,7 +156,7 @@ AppImages are available for both **x86_64** and **ARM (aarch64)**.
 | **Enabled** | Toggle reminders on/off |
 | **Launch at Login/Boot** | Auto-start on system startup |
 | **Min/Max Interval** | Random interval range (default 6s–1.5min) |
-| **Display Duration** | How long the overlay stays visible |
+| **Display Duration (overlay platforms)** | How long the overlay stays visible; macOS notification duration is controlled by the system |
 | **✨ Show Now** | Trigger a reminder immediately |
 
 ## Releasing

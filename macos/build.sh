@@ -34,11 +34,10 @@ swiftc \
     -sdk "$(xcrun --show-sdk-path)" \
     -framework Cocoa \
     -framework SwiftUI \
+    -framework UserNotifications \
     -framework ServiceManagement \
     "$SOURCES_DIR/main.swift" \
     "$SOURCES_DIR/SettingsStore.swift" \
-    "$SOURCES_DIR/OverlayContentView.swift" \
-    "$SOURCES_DIR/OverlayManager.swift" \
     "$SOURCES_DIR/TimerManager.swift" \
     "$SOURCES_DIR/SettingsView.swift" \
     "$SOURCES_DIR/AppDelegate.swift"
