@@ -155,22 +155,26 @@ final class SettingsStore: ObservableObject {
         }
     }
 
-    /// Advances through the selected pack in order, retaining the cursor across launches.
+    /// Advances through all packs in name order, retaining the cursor across launches.
     var nextLine: String {
-        let key = "nextReminderIndex." + selectedPack
+        let key = "allPacksNextReminderIndex"
         var index = defaults.integer(forKey: key)
-        let line = nextReminderLine(text: reminderText, index: &index)
+        let line = nextReminderLine(packs: packs, index: &index)
         defaults.set(index, forKey: key)
         return line
     }
 }
 
-func nextReminderLine(text: String, index: inout Int) -> String {
-    let lines = text.components(separatedBy: .newlines)
-        .map { $0.trimmingCharacters(in: .whitespaces) }
-        .filter { !$0.isEmpty }
-    guard !lines.isEmpty else { index = 0; return "" }
-    let current = max(0, index) % lines.count
-    index = (current + 1) % lines.count
-    return lines[current]
+func nextReminderLine(packs: [String: String], index: inout Int) -> String {
+    let groups = packs.keys.sorted().map { name in
+        packs[name, default: ""].components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+    }.filter { !$0.isEmpty }
+    guard !groups.isEmpty else { index = 0; return "" }
+    let current = max(0, index)
+    let lines = groups[current % groups.count]
+    let line = lines[(current / groups.count) % lines.count]
+    index = current == Int.max ? 0 : current + 1
+    return line
 }

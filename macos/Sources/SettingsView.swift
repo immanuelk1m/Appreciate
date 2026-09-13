@@ -15,7 +15,7 @@ struct SettingsView: View {
 
             // Pack selector
             VStack(alignment: .leading, spacing: 6) {
-                Text("Reminder Pack")
+                Text("Reminder Pack to Edit")
                     .font(.headline)
 
                 HStack {
@@ -36,6 +36,10 @@ struct SettingsView: View {
                     .help("Delete current pack")
                 }
             }
+
+            Text("Notifications cycle through all packs.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
             // Reminder text
             VStack(alignment: .leading, spacing: 6) {
